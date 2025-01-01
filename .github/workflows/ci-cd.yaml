@@ -1,0 +1,33 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch if needed
+
+jobs:
+  deploy:
+    name: Deploy to Hostinger
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install FTP Client
+      run: sudo apt-get install -y ftp
+
+    - name: Upload files via FTP
+      env:
+        FTP_HOST: ${{ secrets.FTP_HOST }}
+        FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+        FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      run: |
+        ftp -n -v $FTP_HOST <<END_SCRIPT
+        quote USER $FTP_USERNAME
+        quote PASS $FTP_PASSWORD
+        lcd ./
+        cd /public_html # Remote directory on Hostinger
+        mput *
+        quit
+        END_SCRIPT
